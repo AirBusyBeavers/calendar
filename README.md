@@ -12,23 +12,23 @@ GET /reservations
   - returns an empty array if no reservations have been made
 
 Example input: 
-  {
-    propID: 1234567890
-  }
+  { \n
+    propID: 1234567890, \n
+  } 
 
 Example output: 
 {
   [{
-    resStart: someDate1,
-    resEnd: anotherDate1,
+    resStart: someDate1, \n
+    resEnd: anotherDate1, \n
   },
   {
-    resStart: someDate2,
-    resEnd: anotherDate2,
+    resStart: someDate2, \n
+    resEnd: anotherDate2, \n
   },
   {
-    resStart: someDate3,
-    resEnd: anotherDate3,
+    resStart: someDate3, \n
+    resEnd: anotherDate3, \n
   }]
 }
 ______________________________________________________________________
@@ -48,19 +48,31 @@ POST /makeRes
   - resID (type NUMBER): unique reservation ID that is cached locally for faster update/delete access
 
 Example input: 
+
   {
+
     propID: 1234567890,
+
     userID: 0987654321,
+
     resStart: Date1,
+
     resEnd: Date2,
+
     adults: 2,
+
     children: 3,
+
     infants: 0
+
   }
 
 Example output:
+
   {
+
     resID: 24680
+
   }
 ______________________________________________________________________
 PUT /updateRes
@@ -77,16 +89,25 @@ PUT /updateRes
   - resID: same as above
 
 Example input: 
+
   {
+
     resID: 24680
+
     resStart: Date1,
+
     resEnd: Date2,
+
     infants: 1
+
   }
 
 Example output:
+
   {
+
     resID: 24680
+
   }
 ______________________________________________________________________
 DELETE /deleteRes
@@ -98,6 +119,9 @@ DELETE /deleteRes
   - (none)
 
 Example input:
+
   {
+
     resID: 24680
+
   }

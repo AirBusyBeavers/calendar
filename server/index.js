@@ -57,7 +57,7 @@ app.get('/month', (req, res) => {
 //   const {  }
 // });
 
-app.post('/reservation', (req, res) => {
+app.post('/makeRes', (req, res) => {
   // const { userID, propID, resStart, resEnd, bodyCount } = req.body;
   db.makeReservation(req.body)
     .then((ok) => {
@@ -71,7 +71,7 @@ app.post('/reservation', (req, res) => {
     })
 });
 
-app.get('/reservation', (req, res) => {
+app.get('/reservations', (req, res) => {
   const { propId } = req.body;
   db.getReservations(propId)
     .then((reservations) => {
@@ -85,7 +85,7 @@ app.get('/reservation', (req, res) => {
     })
 });
 
-app.put('/reservation', (req, res) => {
+app.put('/updateRes', (req, res) => {
   // const { resID, resStart, resEnd, bodyCount } = req.body;
   db.updateReservation(req.body)
     .then((ok) => {
@@ -97,7 +97,7 @@ app.put('/reservation', (req, res) => {
     })
 });
 
-app.delete('/reservation', (req, res) => {
+app.delete('/deleteRes', (req, res) => {
   const { resID } = req.body;
   db.deleteReservation(resId)
     .then((ok) => {

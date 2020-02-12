@@ -11,26 +11,30 @@ GET /reservations
   - an array of objects with reservation start and end Dates
   - returns an empty array if no reservations have been made
 
-Example input: 
-  { \n
-    propID: 1234567890, \n
+Example input:
+```javascript
+  {
+    propID: 1234567890,
   } 
+```
 
-Example output: 
-{
-  [{
-    resStart: someDate1, \n
-    resEnd: anotherDate1, \n
-  },
+Example output:
+```javascript
   {
-    resStart: someDate2, \n
-    resEnd: anotherDate2, \n
-  },
-  {
-    resStart: someDate3, \n
-    resEnd: anotherDate3, \n
-  }]
-}
+    [{
+      resStart: someDate1,
+      resEnd: anotherDate1,
+    },
+    {
+      resStart: someDate2,
+      resEnd: anotherDate2,
+    },
+    {
+      resStart: someDate3,
+      resEnd: anotherDate3,
+    }]
+  }
+```
 ______________________________________________________________________
 POST /makeRes
 - BEHAVIOR
@@ -48,32 +52,24 @@ POST /makeRes
   - resID (type NUMBER): unique reservation ID that is cached locally for faster update/delete access
 
 Example input: 
-
+```javascript
   {
-
     propID: 1234567890,
-
     userID: 0987654321,
-
     resStart: Date1,
-
     resEnd: Date2,
-
     adults: 2,
-
     children: 3,
-
     infants: 0
-
   }
+```
 
 Example output:
-
+```javascript
   {
-
     resID: 24680
-
   }
+```
 ______________________________________________________________________
 PUT /updateRes
 - BEHAVIOR
@@ -89,26 +85,21 @@ PUT /updateRes
   - resID: same as above
 
 Example input: 
-
+```javascript
   {
-
     resID: 24680
-
     resStart: Date1,
-
     resEnd: Date2,
-
     infants: 1
-
   }
+```
 
 Example output:
-
+```javascript
   {
-
     resID: 24680
-
   }
+```
 ______________________________________________________________________
 DELETE /deleteRes
 - BEHAVIOR
@@ -119,9 +110,8 @@ DELETE /deleteRes
   - (none)
 
 Example input:
-
+```javascript
   {
-
     resID: 24680
-
   }
+```

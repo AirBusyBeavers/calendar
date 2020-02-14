@@ -1,1 +1,4 @@
 node_modules
+db/properties.csv
+db/reservation.csv
+db/users.csv

@@ -18,4 +18,4 @@ CREATE TABLE address (
   PRIMARY KEY (ID)
 );
 
--- mysql -u root < server/schema.sql
+-- mysql -u root -proot < server/schema.sql

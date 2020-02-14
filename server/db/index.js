@@ -3,6 +3,7 @@ var mysql = require("mysql");
 var connection = mysql.createConnection({
   host: "localhost",
   user: "root",
+  password: "root",
   database: 'calendar'
 });
 
@@ -11,7 +12,6 @@ connection.connect(function(err) {
     console.log("login failure, mysql -u root");
     return;
   }
-
   console.log("DB Connection Success @ db/index.js");
 });
 
@@ -25,13 +25,13 @@ const getMonthAvalibility = function(params, callback) {
       callback(null, data);
     }
   })
-
 }
 
-
+const setReservation = (params) => {
+  let sqlString = `SELECT * from availability`
+}
 
 module.exports = {
   getMonthAvalibility,
   connection
-
 };

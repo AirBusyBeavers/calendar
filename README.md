@@ -2,7 +2,7 @@
 
 ## API
 ______________________________________________________________________
-### GET /reservations/:resID
+### GET /reservations/:propID
 - BEHAVIOR
   - retrieves stored reservations for a specified property
 - INPUT PARAMETERS
@@ -111,7 +111,7 @@ Example input:
 ______________________________________________________________________
 ### GET /users/:userID
 - BEHAVIOR
-  - retrieves user information for a given userID
+  - retrieves a single user's information for a given userID
 - INPUT PARAMETERS
   - userID (type NUMBER): unique user identifier
 - OUTPUT

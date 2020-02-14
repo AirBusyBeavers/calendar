@@ -2,59 +2,58 @@
 
 ## API
 ______________________________________________________________________
-### GET /reservations/:propID
+### GET /reservations/:propertyID
 - BEHAVIOR
   - retrieves stored reservations for a specified property
-- INPUT PARAMETERS
-  - propID (type NUMBER): unique property identifier
-- OUTPUT
+- REQUEST BODY
+  - propertyID (type NUMBER): unique property identifier
+- RESPONSE
   - an array of objects with reservation start and end Dates
   - returns an empty array if no reservations have been made
 
 Example input:
 ```javascript
-  {
-    propID: 1234567890,
+  req.body = {
+    propertyID: 1234567890,
   } 
 ```
 
 Example output:
 ```javascript
-  {
-    [{
-      resStart: someDate1,
-      resEnd: anotherDate1,
+  response = [
+    {
+      start: someDate1,
+      end: anotherDate1,
     },
     {
-      resStart: someDate2,
-      resEnd: anotherDate2,
+      start: someDate2,
+      end: anotherDate2,
     },
     {
-      resStart: someDate3,
-      resEnd: anotherDate3,
-    }]
-  }
+      start: someDate3,
+      end: anotherDate3,
+    }
+  ]
 ```
 ______________________________________________________________________
 ### POST /reservations/
 - BEHAVIOR
-  - stores submitted reservation parameters as a database entry
-- INPUT PARAMETERS
-  - propID (type NUMBER): unique property identifier
+  - stores submitted reservation parameters in RESERVATIONS table
+- REQUEST BODY
+  - propertyID (type NUMBER): unique property identifier
   - userID (type NUMBER): unique user identifier
-  - resStart (type DATE): start date of reservation
-  - resEnd (type DATE): end date of reservation
-  - count (type OBJECT): object containing the number of adults, children, and infants
-    - adults (type NUMBER): number of adults
-    - children (type NUMBER): number of children
-    - infants (type NUMBER): number of infants
-- OUTPUT
-  - resID (type NUMBER): unique reservation ID of the newly created reservation
+  - start (type DATE): start date of reservation
+  - end (type DATE): end date of reservation
+  - adults (type NUMBER): number of adults
+  - children (type NUMBER): number of children
+  - infants (type NUMBER): number of infants
+- RESPONSE
+  - reservationID (type NUMBER): unique reservation ID of the newly created reservation
 
 Example input: 
 ```javascript
-  {
-    propID: 1234567890,
+  req.body = {
+    propertyID: 1234567890,
     userID: 0987654321,
     resStart: Date1,
     resEnd: Date2,
@@ -66,67 +65,67 @@ Example input:
 
 Example output:
 ```javascript
-  {
-    resID: 24680
+  response = {
+    reservationID: 24680
   }
 ```
 ______________________________________________________________________
-### PUT /reservations/:resID
+### PUT /reservations/:reservationID
 - BEHAVIOR
-  - given a resID, updates the stored record matching the resID with any additional parameters passed
-- INPUT
-  - resID (type NUMBER): unique reservation ID that is cached locally for faster update/delete access
-  - resStart (OPTIONAL, type DATEOPTIONAL, ): start date of reservation
-  - resEnd (OPTIONAL, type DATE): end date of reservation
+  - given a reservation ID, updates the stored record matching the reservationID with any additional parameters passed
+- REQUEST BODY
+  - reservation ID (type NUMBER): unique reservation ID that is cached locally for faster update/delete access
+  - start (OPTIONAL, type DATEOPTIONAL, ): start date of reservation
+  - end (OPTIONAL, type DATE): end date of reservation
   - adults (OPTIONAL, type NUMBER): number of adults
   - children (OPTIONAL, type NUMBER): number of children
   - infants (OPTIONAL, type NUMBER): number of infants
-- OUTPUT
+- RESPONSE
   - none
 
 Example input: 
 ```javascript
-  {
-    resID: 24680
+  req.body = {
+    reservationID: 24680
     resStart: Date1,
     resEnd: Date2,
     infants: 1
   }
 ```
 ______________________________________________________________________
-### DELETE /reservations/:resID
+### DELETE /reservations/:reservationID
 - BEHAVIOR
-  - given a resID, deletes associated record from database
-- INPUT
-  - resID (type NUMBER): unique reservation identifier
-- OUTPUT
+  - deletes record with given reservationID from database
+- REQUEST BODY
+  - reservationID (type NUMBER): unique reservation identifier
+- RESPONSE
   - none
 
 Example input:
 ```javascript
-  {
-    resID: 24680
+  req.body = {
+    reservationID: 24680
   }
 ```
 ______________________________________________________________________
 ### GET /users/:userID
 - BEHAVIOR
   - retrieves a single user's information for a given userID
-- INPUT PARAMETERS
+- REQUEST BODY
   - userID (type NUMBER): unique user identifier
-- OUTPUT
+- RESPONSE
   - an object with stored user data
 
 Example input:
 ```javascript
-  {
+  req.body = {
     userID: 24680,
   } 
 ```
 
 Example output:
 ```javascript
-  {
+  response = {
     firstName: Fred,
     lastName: George,
     listings: ['123141', '129348']
@@ -136,16 +135,16 @@ ______________________________________________________________________
 ### POST /users/
 - BEHAVIOR
   - stores a new user entry into USERS table
-- INPUT PARAMETERS
+- REQUEST BODY
   - firstName (type STRING): user first name
   - lastName (type STRING): user last name
-  - listings (type ARRAY of STRINGS, DEFAULT []): array containing propIDs associated with the user
-- OUTPUT
+  - listings (type ARRAY of STRINGS, DEFAULT []): array containing propertyIDs associated with the user
+- RESPONSE
   - userID (type NUMBER): unique user ID of newly created entry
 
 Example input: 
 ```javascript
-  {
+  req.body = {
     firstName: Fred,
     lastName: George,
   }
@@ -153,7 +152,7 @@ Example input:
 
 Example output:
 ```javascript
-  {
+  response = {
     userID: 24680
   }
 ```
@@ -161,17 +160,17 @@ ______________________________________________________________________
 ### PUT /users/:userID
 - BEHAVIOR
   - given a userID, updates the stored record matching the userID with the passed parameters
-- INPUT
+- REQUEST BODY
   - userID (type NUMBER): unique user ID
   - firstName (OPTIONAL, type DATE): user first name
   - lastName (OPTIONAL, type DATE): user last name
-  - listings (OPTIONAL, type ARRAY of STRINGS): array containing propIDs associated with the user
-- OUTPUT
+  - listings (OPTIONAL, type ARRAY of STRINGS): array containing propertyIDs associated with the user
+- RESPONSE
   - none
 
 Example input: 
 ```javascript
-  {
+  req.body = {
     userID: 24680
     firstName: Fred,
     lastName: George,
@@ -181,37 +180,37 @@ ______________________________________________________________________
 ### DELETE /users/:userID
 - BEHAVIOR
   - given a userID, deletes associated record from USERS table
-- INPUT
+- REQUEST BODY
   - userID (type NUMBER): unique reservation identifier
-- OUTPUT
+- RESPONSE
   - none
 
 Example input:
 ```javascript
-  {
+  req.body = {
     userID: 24680
   }
 ```
 ______________________________________________________________________
-### GET /properties/:propID
+### GET /properties/:propertyID
 - BEHAVIOR
-  - retrieves property information for property with the propID
-- INPUT PARAMETERS
-  - propID (type NUMBER): unique property identifier
-- OUTPUT
+  - retrieves property information for property with the propertyID
+- REQUEST BODY
+  - propertyID (type NUMBER): unique property identifier
+- RESPONSE
   - an object with the properties address, pricing info, 
     and how many days from the current day a user may make a reservation
 
 Example input:
 ```javascript
-  {
-    propID: 24680,
+  req.body = {
+    propertyID: 24680,
   } 
 ```
 
 Example output:
 ```javascript
-  {
+  response = {
     address: {
       streetAddress: '1234 Hackreactor Plaza',
       city: 'San Francisco',
@@ -230,7 +229,7 @@ ______________________________________________________________________
 ### POST /properties
 - BEHAVIOR
   - stores submitted property parameters as a database entry in PROPERTIES table
-- INPUT PARAMETERS
+- REQUEST BODY
   - address (OPTIONAL, type OBJECT):
     - streetAddress (type STRING)
     - city (type STRING)
@@ -241,12 +240,12 @@ ______________________________________________________________________
     - cleaningPrice (type NUMBER)
     - servicePrice (type NUMBER)
   - maxReservationDate (type NUMBER)
-- OUTPUT
-  - propID (type NUMBER): unique property ID of newly created entry
+- RESPONSE
+  - propertyID (type NUMBER): unique property ID of newly created entry
 
 Example input: 
 ```javascript
-  {
+  req.body = {
     address: {
       streetAddress: '1234 Hackreactor Plaza',
       city: 'San Francisco',
@@ -264,17 +263,17 @@ Example input:
 
 Example output:
 ```javascript
-  {
-    propID: 24680
+  response = {
+    propertyID: 24680
   }
 ```
 ______________________________________________________________________
-### PUT /properties/:propID
+### PUT /properties/:propertyID
 - BEHAVIOR
-  - given a propID, updates the stored record matching the propID with passed parameters
+  - given a propertyID, updates the stored record matching the propertyID with passed parameters
   - if a field stores data within an object, all properties (changed and unchanged) of that object must be provided
-- INPUT
-  - propID (type NUMBER): unique property ID
+- REQUEST BODY
+  - propertyID (type NUMBER): unique property ID
   - address (OPTIONAL, type OBJECT):
     - streetAddress (type STRING)
     - city (type STRING)
@@ -285,13 +284,13 @@ ______________________________________________________________________
     - cleaningPrice (type NUMBER)
     - servicePrice (type NUMBER)
   - maxReservationDate (type NUMBER)
-- OUTPUT
+- RESPONSE
   - none
 
 Example input: 
 ```javascript
-  {
-    propID: 24680,
+  req.body = {
+    propertyID: 24680,
     address: {
       streetAddress: '1234 Hackreactor Plaza',
       city: 'San Francisco',
@@ -301,17 +300,17 @@ Example input:
   }
 ```
 ______________________________________________________________________
-### DELETE /properties/:propID
+### DELETE /properties/:propertyID
 - BEHAVIOR
-  - given a propID, deletes associated record from PROPERTIES table
-- INPUT
-  - propID (type NUMBER): unique property identifier
-- OUTPUT
+  - given a propertyID, deletes associated record from PROPERTIES table
+- REQUEST BODY
+  - propertyID (type NUMBER): unique property identifier
+- RESPONSE
   - none
 
 Example input:
 ```javascript
-  {
-    propID: 24680
+  req.body = {
+    propertyID: 24680
   }
 ```

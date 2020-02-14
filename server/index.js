@@ -53,12 +53,8 @@ app.get('/month', (req, res) => {
   });
 
 // New CRUD operations for SDC
-// app.get('/month', (req, res) => {
-//   const {  }
-// });
-
-app.post('/makeRes', (req, res) => {
-  // const { userID, propID, resStart, resEnd, bodyCount } = req.body;
+app.post('/reservations', (req, res) => {
+  // const { userID, propID, start, end, adults, children, infants } = req.body;
   db.makeReservation(req.body)
     .then((ok) => {
       res.status(200);
@@ -71,7 +67,7 @@ app.post('/makeRes', (req, res) => {
     })
 });
 
-app.get('/reservations', (req, res) => {
+app.get('/reservations/:propID', (req, res) => {
   const { propId } = req.body;
   db.getReservations(propId)
     .then((reservations) => {
@@ -85,8 +81,8 @@ app.get('/reservations', (req, res) => {
     })
 });
 
-app.put('/updateRes', (req, res) => {
-  // const { resID, resStart, resEnd, bodyCount } = req.body;
+app.put('/reservations', (req, res) => {
+  // const { resID, resStart, resEnd, count } = req.body;
   db.updateReservation(req.body)
     .then((ok) => {
       res.status(200);
@@ -97,7 +93,7 @@ app.put('/updateRes', (req, res) => {
     })
 });
 
-app.delete('/deleteRes', (req, res) => {
+app.delete('/reservations/:resID', (req, res) => {
   const { resID } = req.body;
   db.deleteReservation(resId)
     .then((ok) => {
@@ -106,6 +102,118 @@ app.delete('/deleteRes', (req, res) => {
     })
     .catch((err) => {
       console.log(`Error deleting reservation ${resID}. \nThe following error message has been generated:\n`, err);
+      res.status(500);
+      res.send(err);
+    });
+});
+
+// API for USERS table (if needed)
+app.post('/users', (req, res) => {
+  // const { firstName, lastName, listings } = req.body;
+  db.createUser(req.body)
+    .then((userID) => {
+      res.status(200);
+      res.send(userID);
+    })
+    .catch((err) => {
+      console.log(`Error adding user. \nThe following error message has been generated:\n`, err);
+      res.status(500);
+      res.send(err);
+    });
+});
+
+app.get('/users/:userID', (req, res) => {
+  const { userID } = req.body;
+  db.findUser(userID)
+    .then((ok) => {
+      res.status(200);
+      res.send(ok);
+    })
+    .catch((err) => {
+      console.log(`Error finding user. \nThe following error message has been generated:\n`, err);
+      res.status(500);
+      res.send(err);
+    });
+});
+
+app.put('/users/:userID', (req, res) => {
+  db.updateUser(req.body)
+    .then((ok) => {
+      res.status(200);
+      res.send(ok);
+    })
+    .catch((err) => {
+      console.log(`Error adding user ${resID}. \nThe following error message has been generated:\n`, err);
+      res.status(500);
+      res.send(err);
+    });
+});
+
+app.delete('/users/:userID', (req, res) => {
+  const { userID } = req.body;
+  db.addUser(userID)
+    .then((ok) => {
+      res.status(200);
+      res.send(ok);
+    })
+    .catch((err) => {
+      console.log(`Error adding user ${userID}. \nThe following error message has been generated:\n`, err);
+      res.status(500);
+      res.send(err);
+    });
+});
+
+// API for PROPERTIES table (if needed)
+app.post('/properties', (req, res) => {
+  // const { address, pricingInfo,  } = req.body;
+  db.createProperty(req.body)
+    .then((propID) => {
+      res.status(200);
+      res.send(propID);
+    })
+    .catch((err) => {
+      console.log(`Error adding user. \nThe following error message has been generated:\n`, err);
+      res.status(500);
+      res.send(err);
+    });
+});
+
+app.get('/properties/:propID', (req, res) => {
+  const { propID } = req.body;
+  db.findProperty(propID)
+    .then((ok) => {
+      res.status(200);
+      res.send(ok);
+    })
+    .catch((err) => {
+      console.log(`Error finding property entry: ${propID}. \nThe following error message has been generated:\n`, err);
+      res.status(500);
+      res.send(err);
+    });
+});
+
+app.put('/properties/:propID', (req, res) => {
+  db.updateProperty(req.body)
+    .then((ok) => {
+      res.status(200);
+      res.send(ok);
+    })
+    .catch((err) => {
+      console.log(`Error patching property entry: ${propID}. \nThe following error message has been generated:\n`, err);
+      res.status(500);
+      res.send(err);
+    });
+});
+
+app.delete('/properties/:propID', (req, res) => {
+  const { userID } = req.body;
+  db.deleteProperty(propID)
+    .then((ok) => {
+      res.status(200);
+      res.send(ok);
+    })
+    .catch((err) => {
+      console.log(`Error deleting property entry: ${propID}. \nThe following error message has been generated:\n`, err);
       res.status(500);
       res.send(err);
     });

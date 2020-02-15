@@ -24,9 +24,26 @@ const dateBlockGenerator = () => {
   return [start, end];
 }
 
-const propertyGenerator = (propertyID) => {
+const userGenerator = (userID) => {
+
+  let properties = [];
+  for (var i = 0; i < random(2); i++) {
+    properties.push(random(10000000).toString());
+  }
+
+  const user = {
+    userID: userID,
+    firstName: faker.name.firstName(),
+    lastName: faker.name.lastName(),
+  };
+
+  return user;
+}
+
+const propertyGenerator = (userID, propertyID) => {
   let property = {
     propertyID: propertyID,
+    owner: userID,
     streetAddress: faker.address.streetAddress(),
     city: faker.address.city(),
     state: faker.address.stateAbbr(),
@@ -39,23 +56,6 @@ const propertyGenerator = (propertyID) => {
   };
 
   return property;
-}
-
-const userGenerator = (userID) => {
-
-  let properties = [];
-  for (var i = 0; i < random(2); i++) {
-    properties.push(random(10000000).toString());
-  }
-
-  const user = {
-    userID: userID,
-    firstName: faker.name.firstName(),
-    lastName: faker.name.lastName(),
-    properties: properties,
-  };
-
-  return user;
 }
 
 const daysOut = [30, 60, 90];
@@ -79,40 +79,40 @@ const reservationGenerator = (reservationID, propertyID, userID) => {
 const userWriter = createWriter({
   path: 'users.csv',
   header: [
-    {id: 'userID', title: 'User ID'},
-    {id: 'firstName', title: 'First Name'},
-    {id: 'lastName', title: 'Last Name'},
-    {id: 'properties', title: 'Properties'},
+    'userID',
+    'firstName',
+    'lastName',
   ]
 });
 
 const propertyWriter = createWriter({
   path: './properties.csv',
   header: [
-    {id: 'propertyID', title: 'Property ID'},
-    {id: 'streetAddress', title: 'Street Address'},
-    {id: 'city', title: 'City'},
-    {id: 'state', title: 'State (abbr.)'},
-    {id: 'zipCode', title: 'Zipcode'},
-    {id: 'basePrice', title: 'Base Price'},
-    {id: 'cleaningPrice', title: 'Cleaning Price'},
-    {id: 'servicePrice', title: 'Service Price'},
-    {id: 'maxDuration', title: 'Maximum Duration'},
-    {id: 'lastReservationDate', title: 'Furthest Number of Days for Valid Reservation'}
+    'propertyID',
+    'owner',
+    'streetAddress',
+    'city',
+    'state',
+    'zipCode',
+    'basePrice',
+    'cleaningPrice',
+    'servicePrice',
+    'maxDuration',
+    'lastReservationDate'
   ]
 });
 
 const reservationWriter = createWriter({
   path: './reservation.csv',
   header: [
-    {id: 'reservationID', title: 'Reservation ID'},
-    {id: 'userID', title: 'User ID'},
-    {id: 'propertyID', title: 'Property ID'},
-    {id: 'start', title: 'Reservation Start Date'},
-    {id: 'end', title: 'Reservation End Date'},
-    {id: 'adults', title: 'Number of Adults'},
-    {id: 'children', title: 'Number of Children'},
-    {id: 'infants', title: 'Number of Infants'},
+    'reservationID',
+    'userID',
+    'propertyID',
+    'start',
+    'end',
+    'adults',
+    'children',
+    'infants',
   ]
 });
 
@@ -137,11 +137,14 @@ const seedUsers = () => {
 // Create properties.csv
 const seedProperties = () => {
   const startTime = new Date();
-  console.log('Started at ', startTime)
+  console.log('Started at ', startTime);
+
   let propertyCount = 1;
   let properties = [];
+
   while (propertyCount <= 10000000) {
-    properties.push(propertyGenerator(propertyCount));
+    const user = random(1000000);
+    properties.push(propertyGenerator(user, propertyCount));
     propertyCount++;
   }
   propertyWriter.writeRecords(properties)
@@ -171,6 +174,6 @@ const seedReservations = () => {
     });
 }
 
-// seedUsers();
-// seedProperties();
-// seedReservations();
+seedUsers();
+seedProperties();
+seedReservations();

@@ -82,7 +82,7 @@ app.get('/reservations/:propertyID', (req, res) => {
 });
 
 app.put('/reservations', (req, res) => {
-  // const { reservationID, resStart, resEnd, count } = req.body;
+  // const { userID, reservationID, resStart, resEnd, count } = req.body;
   db.updateReservation(req.body)
     .then((ok) => {
       res.status(200);
@@ -94,8 +94,8 @@ app.put('/reservations', (req, res) => {
 });
 
 app.delete('/reservations/:reservationID', (req, res) => {
-  const { reservationID } = req.body;
-  db.deleteReservation(resId)
+  // const { userID, reservationID } = req.body;
+  db.deleteReservation(req.body)
     .then((ok) => {
       res.status(200);
       res.send(ok)
@@ -137,13 +137,14 @@ app.get('/users/:userID', (req, res) => {
 });
 
 app.put('/users/:userID', (req, res) => {
+  // const { userID, ...otherParams } = req.body;
   db.updateUser(req.body)
     .then((ok) => {
       res.status(200);
       res.send(ok);
     })
     .catch((err) => {
-      console.log(`Error adding user ${reservationID}. \nThe following error message has been generated:\n`, err);
+      console.log(`Error updating user: ${userID}. \nThe following error message has been generated:\n`, err);
       res.status(500);
       res.send(err);
     });
@@ -151,13 +152,13 @@ app.put('/users/:userID', (req, res) => {
 
 app.delete('/users/:userID', (req, res) => {
   const { userID } = req.body;
-  db.addUser(userID)
+  db.deleteUser(userID)
     .then((ok) => {
       res.status(200);
       res.send(ok);
     })
     .catch((err) => {
-      console.log(`Error adding user ${userID}. \nThe following error message has been generated:\n`, err);
+      console.log(`Error deleting user: ${userID}. \nThe following error message has been generated:\n`, err);
       res.status(500);
       res.send(err);
     });
@@ -165,7 +166,7 @@ app.delete('/users/:userID', (req, res) => {
 
 // API for PROPERTIES table (if needed)
 app.post('/properties', (req, res) => {
-  // const { address, pricingInfo,  } = req.body;
+  // const { ...propertyParams  } = req.body;
   db.createProperty(req.body)
     .then((propertyID) => {
       res.status(200);
@@ -193,6 +194,7 @@ app.get('/properties/:propertyID', (req, res) => {
 });
 
 app.put('/properties/:propertyID', (req, res) => {
+  // const { userID, propertyID } = req.body;
   db.updateProperty(req.body)
     .then((ok) => {
       res.status(200);
@@ -206,8 +208,8 @@ app.put('/properties/:propertyID', (req, res) => {
 });
 
 app.delete('/properties/:propertyID', (req, res) => {
-  const { userID } = req.body;
-  db.deleteProperty(propertyID)
+  // const { userID, propertyID } = req.body;
+  db.deleteProperty(req.body)
     .then((ok) => {
       res.status(200);
       res.send(ok);

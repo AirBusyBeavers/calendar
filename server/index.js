@@ -3,8 +3,8 @@ const axios = require('axios');
 const path = require('path');
 const morgan = require('morgan');
 const parser = require('body-parser');
-const legacydb = require('./db');
-const db = require('../db');
+// const legacydb = require('./db');
+const db = require('../db/cassandra.js');
 
 const app = express();
 const PORT = 3001;
@@ -12,6 +12,7 @@ const PORT = 3001;
 // apply middlware
 app.use(morgan('dev'));
 app.use(parser.json());
+app.use(express.urlencoded({extended: true}));
 
 // Serve static files. Any requests for specific files will be served if they exist in the provided folder
 app.use(express.static(path.join(__dirname, '../client/dist')));
@@ -22,63 +23,77 @@ app.use(express.static(path.join(__dirname, '../client/dist')));
 //   next();
 // });
 
-app.get('/month', (req, res) => {
-    var params = req.query;
-    legacydb.getMonthAvalibility(params, (err, data) => {
-      if (err) {
-        console.log(`error @ getMonthAvailability`, err);
-        res.sendStatus(500);
-      } else {
-        console.log('data @ index', data);
-        let individualDayArr = [];
+// app.get('/month', (req, res) => {
+//     var params = req.query;
+//     legacydb.getMonthAvalibility(params, (err, data) => {
+//       if (err) {
+//         console.log(`error @ getMonthAvailability`, err);
+//         res.sendStatus(500);
+//       } else {
+//         console.log('data @ index', data);
+//         let individualDayArr = [];
 
-        data.forEach(item => {
-          const startDate = item.startDate;
-          const endDate = item.endDate;
+//         data.forEach(item => {
+//           const startDate = item.startDate;
+//           const endDate = item.endDate;
 
-          while (startDate <= endDate) {
-            let indDate = startDate.toISOString().split("T")[0];
-            individualDayArr.push(indDate);
-            startDate.setDate(startDate.getDate() + 1);
-          }
-        });
+//           while (startDate <= endDate) {
+//             let indDate = startDate.toISOString().split("T")[0];
+//             individualDayArr.push(indDate);
+//             startDate.setDate(startDate.getDate() + 1);
+//           }
+//         });
 
-        const month_year = `${params.year}-${params.month}`;
-        const a = individualDayArr.filter(item => item.includes(month_year));
+//         const month_year = `${params.year}-${params.month}`;
+//         const a = individualDayArr.filter(item => item.includes(month_year));
 
-        console.log('filtered', a);
-        res.json(a);
-      }
-    });
-  });
+//         console.log('filtered', a);
+//         res.json(a);
+//       }
+//     });
+//   });
 
 // New CRUD operations for SDC
 app.post('/reservations', (req, res) => {
-  // const { userID, propertyID, start, end, adults, children, infants } = req.body;
-  db.makeReservation(req.body)
-    .then((ok) => {
-      res.status(200);
-      res.send(ok);
-    })
-    .catch((err) => {
-      console.log(`Error making reservation. \nThe following error message has been generated:\n`, err);
-      res.status(500);
-      res.end();
-    })
+  // const { reservationID, userID, propertyID, reservationstart, reservationend, adults, children, infants } = req.body;
+  db.makeReservation(req.body, (err, ok) => {
+    if (err) {
+        res.status(500);
+        res.send(err);
+      } else {
+        res.status(200);
+        res.send(ok);
+      }
+  });
 });
 
-app.get('/reservations/:propertyID', (req, res) => {
-  const { propId } = req.body;
-  db.getReservations(propId)
-    .then((reservations) => {
-      res.status(200);
-      res.send(reservations);
-    })
-    .catch((err) => {
-      console.log(`Error getting information from database for property ${propertyID}. \nThe following error message has been generated:\n`, err)
-      res.status(500);
-      res.end();
-    })
+// prioritizes retrieving reservations using propertyID over userID
+app.get('/reservations', (req, res) => {
+  const { propertyID, userID } = req.body;
+  if (propertyID) {
+    db.getReservationsByProperty(parseInt(propertyID), (err, reservationData) => {
+      if (err) {
+        res.status(500);
+        res.send(err);
+      } else {
+        res.status(200);
+        res.send(reservationData);
+      }
+    });
+  } else if (userID) {
+    db.getReservationsByUser(parseInt(userID), (err, reservationData) => {
+      if (err) {
+        res.status(500);
+        res.send(err);
+      } else {
+        res.status(200);
+        res.send(reservationData);
+      }
+    });
+  } else {
+    res.status(400);
+    res.send('Invalid query input, please provide a valid userID or propertyID');
+  }
 });
 
 app.put('/reservations', (req, res) => {
@@ -122,18 +137,20 @@ app.post('/users', (req, res) => {
     });
 });
 
-app.get('/users/:userID', (req, res) => {
+app.get('/users', (req, res) => {
   const { userID } = req.body;
-  db.findUser(userID)
-    .then((ok) => {
-      res.status(200);
-      res.send(ok);
-    })
-    .catch((err) => {
-      console.log(`Error finding user. \nThe following error message has been generated:\n`, err);
+  console.log(userID);
+  db.getUserById(parseInt(userID), (err, userData) => {
+    if (err) {
+      console.log(`Error getting user with userID ${userID}`);
       res.status(500);
       res.send(err);
-    });
+    } else {
+      console.log(`Here's some user information for ${userID}`);
+      res.status(200);
+      res.send(userData);
+    }
+  });
 });
 
 app.put('/users/:userID', (req, res) => {
@@ -179,18 +196,34 @@ app.post('/properties', (req, res) => {
     });
 });
 
-app.get('/properties/:propertyID', (req, res) => {
-  const { propertyID } = req.body;
-  db.findProperty(propertyID)
-    .then((ok) => {
-      res.status(200);
-      res.send(ok);
-    })
-    .catch((err) => {
-      console.log(`Error finding property entry: ${propertyID}. \nThe following error message has been generated:\n`, err);
-      res.status(500);
-      res.send(err);
+// get prioritizes query by ownerID over propertyID
+app.get('/properties', (req, res) => {
+  const { owner, propertyID } = req.body;
+  if (owner) {
+    db.getPropertyByOwner(parseInt(owner), (err, propertyData) => {
+      if (err) {
+        res.status(500);
+        res.send(err);
+      } else {
+        res.status(200);
+        res.send(propertyData);
+      }
     });
+  } else if (propertyID) {
+    db.getPropertyById(parseInt(propertyID), (err, propertyData) => {
+      if (err) {
+        res.status(500);
+        res.send(err);
+      } else {
+        res.status(200);
+        res.send(propertyData);
+      }
+    });
+  } else {
+    res.status(400);
+    res.send('Invalid query input, please provide a valid userID or propertyID');
+  }
+  
 });
 
 app.put('/properties/:propertyID', (req, res) => {

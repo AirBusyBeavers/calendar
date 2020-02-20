@@ -1,94 +1,117 @@
 const faker = require('faker');
-const createWriter = require('csv-writer').createObjectCsvWriter;
-const sha = require('crypto-js/sha256');
+const createWriter = require('csv-writer').createArrayCsvWriter;
 const path = require('path');
 
 const random = (val) => {
   return Math.round(Math.random() * val);
-}
-
-const hasher = (arr) => {
-  let str = '';
-
-  arr.forEach(entry => {
-    str += entry;
-  });
-
-  return sha(str).toString();
-}
+};
 
 const dateBlockGenerator = () => {
-  const today = Math.floor(Date.now() / 864000000);
-  const start = random(7) + today;
-  const end = random(9) + start;
-  return [start, end];
-}
+  const start = new Date();
+  start.setUTCDate(start.getUTCDate() + random(16));
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + random(14));
+  return [start.toISOString(), end.toISOString()];
+};
 
-const userGenerator = (userID) => {
+const userArrayGenerator = () => {
+  return [
+    faker.name.firstName(),
+    faker.name.lastName(),
+  ];
+};
 
-  let properties = [];
-  for (var i = 0; i < random(2); i++) {
-    properties.push(random(10000000).toString());
-  }
-
-  const user = {
-    userID: userID,
-    firstName: faker.name.firstName(),
-    lastName: faker.name.lastName(),
-  };
-
-  return user;
-}
-
-const propertyGenerator = (userID, propertyID) => {
-  let property = {
-    propertyID: propertyID,
-    owner: userID,
-    streetAddress: faker.address.streetAddress(),
-    city: faker.address.city(),
-    state: faker.address.stateAbbr(),
-    zipCode: faker.address.zipCode(),
-    basePrice: random(150) + 15,
-    cleaningPrice: random(15) + 10,
-    servicePrice: random(15) + 5,
-    maxDuration: random(21) + 7,
-    lastReservationDate: daysOut[random(2)],
-  };
-
-  return property;
-}
+const cassandraUserGenerator = (userID) => {
+  return [
+    userID,
+    faker.name.firstName(),
+    faker.name.lastName(),
+  ];
+};
 
 const daysOut = [30, 60, 90];
-const reservationGenerator = (reservationID, propertyID, userID) => {
+const propertyArrayGenerator = (userID) => {
+  return [
+    userID, 
+    faker.address.streetAddress(), 
+    faker.address.city(), 
+    faker.address.stateAbbr(), 
+    faker.address.zipCode(), 
+    random(150) + 15, 
+    random(15) + 10, 
+    random(15) + 5, 
+    random(21 + 7), 
+    daysOut[random(2)]
+  ];
+};
+
+const cassandraPropertyGenerator = (propertyID, userID) => {
+  return [
+    propertyID,
+    userID,
+    faker.address.streetAddress(), 
+    faker.address.city(), 
+    faker.address.stateAbbr(), 
+    faker.address.zipCode(), 
+    random(150) + 15, 
+    random(15) + 10, 
+    random(15) + 5, 
+    random(21 + 7), 
+    daysOut[random(2)]
+  ];
+};
+
+const reservationArrayGenerator = (propertyID, userID) => {
   const dates = dateBlockGenerator();
 
-  let reservation = {
-    reservationID: reservationID,
-    userID: userID,
-    propertyID: propertyID,
-    start: dates[0],
-    end: dates[1],
-    adults: random(10) + 1, // minimum of 1 adult
-    children: random(6),
-    infants: random(3),
-  };
+  return [
+    propertyID, 
+    userID, 
+    dates[0], 
+    dates[1], 
+    random(10) + 1, 
+    random(6), 
+    random(3)
+  ];
+};
 
-  return reservation;
+const cassandraReservationGenerator = (reservationID, propertyID, userID) => {
+  const dates = dateBlockGenerator();
+
+  return [
+    reservationID,
+    propertyID, 
+    userID, 
+    dates[0], 
+    dates[1], 
+    random(10) + 1, 
+    random(6), 
+    random(3)
+  ];
 };
 
 const userWriter = createWriter({
   path: 'users.csv',
   header: [
-    'userID',
     'firstName',
     'lastName',
-  ]
+  ],
+  append: true,
+});
+
+const cassandraUserWriter = createWriter({
+  path: 'users_cassandra.csv',
+  header: [
+    'userID',
+    'firstName',
+    'lastName'
+  ],
+  append: true
 });
 
 const propertyWriter = createWriter({
   path: './properties.csv',
   header: [
-    'propertyID',
     'owner',
     'streetAddress',
     'city',
@@ -99,11 +122,44 @@ const propertyWriter = createWriter({
     'servicePrice',
     'maxDuration',
     'lastReservationDate'
-  ]
+  ],
+  append: true,
+});
+
+const cassandraPropertyWriter = createWriter({
+  path: 'properties_cassandra.csv',
+  header: [
+    'propertyID',
+    'userID',
+    'streetAddress',
+    'city',
+    'state',
+    'zipCode',
+    'basePrice',
+    'cleaningPrice',
+    'servicePrice',
+    'maxDuration',
+    'lastReservationDate'
+  ],
+  append: true
 });
 
 const reservationWriter = createWriter({
-  path: './reservation.csv',
+  path: 'reservations.csv',
+  header: [
+    'userID',
+    'propertyID',
+    'start',
+    'end',
+    'adults',
+    'children',
+    'infants',
+  ],
+  append: true,
+});
+
+const cassandraReservationWriter = createWriter({
+  path: 'reservations_cassandra.csv',
   header: [
     'reservationID',
     'userID',
@@ -113,67 +169,184 @@ const reservationWriter = createWriter({
     'adults',
     'children',
     'infants',
-  ]
+  ],
+  append: true,
 });
 
 // create users.csv
 const seedUsers = () => {
-  const startTime = new Date();
-  console.log('Started at ', startTime)
+  console.log('Started at:', new Date())
   let userCount = 1;
   let users = [];
   while (userCount <= 1000000) {
-    users.push(userGenerator(userCount));
+    users.push(userArrayGenerator());
     userCount++;
   }
-  userWriter.writeRecords(users)
-    .then(() => {
-      const endTime = new Date();
-      console.log('Done at ', endTime);
-      return;
-    });
-}
+
+  console.log('Finished creating array at:', new Date());
+
+  let batchCount = 0;
+  const totalBatches = userCount / 1000000;
+
+  while (batchCount < totalBatches) {
+    let userBatch = users.slice(batchCount * 1000000, (batchCount + 1) * 1000000);
+    userWriter.writeRecords(userBatch)
+      .catch((err) => {
+        console.log('Error writing batch:', batchCount);
+      });
+    batchCount++;
+  }
+
+  console.log('Done at:', new Date());
+};
+
+const seedCassandraUsers = () => {
+  console.log('Started at:', new Date())
+  let userCount = 1;
+  let users = [];
+  while (userCount <= 1000000) {
+    users.push(cassandraUserGenerator(userCount));
+    userCount++;
+  }
+
+  console.log('Finished creating array at:', new Date());
+
+  let batchCount = 0;
+  const totalBatches = userCount / 1000000;
+
+  while (batchCount < totalBatches) {
+    let userBatch = users.slice(batchCount * 1000000, (batchCount + 1) * 1000000);
+    cassandraUserWriter.writeRecords(userBatch)
+      .catch((err) => {
+        console.log('Error writing batch:', batchCount);
+      });
+    batchCount++;
+  }
+
+  console.log('Done at:', new Date());
+};
 
 // Create properties.csv
 const seedProperties = () => {
-  const startTime = new Date();
-  console.log('Started at ', startTime);
+  console.log('Started at ', new Date());
 
   let propertyCount = 1;
   let properties = [];
 
   while (propertyCount <= 10000000) {
-    const user = random(1000000);
-    properties.push(propertyGenerator(user, propertyCount));
+    const user = Math.max(random(1000000), 1);
+    properties.push(propertyArrayGenerator(user));
     propertyCount++;
   }
-  propertyWriter.writeRecords(properties)
-    .then(() => {
-      const endTime = new Date();
-      console.log('Done at ', endTime);
-    });
-}
 
-// Create properties.csv
+  console.log('Finished creating array at:', new Date());
+  let batchCount = 0;
+  const totalBatches = propertyCount / 1000000;
+
+  while (batchCount < totalBatches) {
+    let propertyBatch = properties.slice(batchCount * 1000000, (batchCount + 1) * 1000000);
+    propertyWriter.writeRecords(propertyBatch)
+      .catch((err) => {
+        console.log('Error writing batch:', batchCount);
+      });
+    batchCount++;
+  }
+
+  console.log('Done at:', new Date());
+};
+
+const seedCassandraProperties = () => {
+  console.log('Started at ', new Date());
+
+  let propertyCount = 1;
+  let properties = [];
+
+  while (propertyCount <= 10000000) {
+    const userID = Math.max(random(1000000), 1);
+    properties.push(cassandraPropertyGenerator(propertyCount, userID));
+    propertyCount++;
+  }
+
+  console.log('Finished creating array at:', new Date());
+  let batchCount = 0;
+  const totalBatches = propertyCount / 1000000;
+
+  while (batchCount < totalBatches) {
+    let propertyBatch = properties.slice(batchCount * 1000000, (batchCount + 1) * 1000000);
+    cassandraPropertyWriter.writeRecords(propertyBatch)
+      .catch((err) => {
+        console.log('Error writing batch:', batchCount);
+      });
+    batchCount++;
+  }
+
+  console.log('Done at:', new Date());
+};
+
+// Create reservations.csv
 const seedReservations = () => {
-  const startTime = new Date();
-  console.log('Started at ', startTime);
+  console.log('Started at:', new Date());
 
   let reservationCount = 1;
   let reservations = [];
-  while (reservationCount <= 2000000) {
-    const user = random(1000000);
-    const property = random(10000000);
-    reservations.push(reservationGenerator(reservationCount, property, user));
+  while (reservationCount <= 20000000) {
+    const user = Math.max(random(1000000), 1);
+    const property = Math.max(random(10000000), 1);
+    reservations.push(reservationArrayGenerator(property, user));
     reservationCount++;
   }
-  reservationWriter.writeRecords(reservations)
-    .then(() => {
-      const endTime = new Date();
-      console.log('Done at ', endTime);
-    });
-}
+  console.log('Finished creating array at:', new Date());
+  let batchCount = 0;
+  const totalBatches = reservationCount / 1000000;
 
-seedUsers();
-seedProperties();
-seedReservations();
+  while (batchCount < totalBatches) {
+    let reservationBatch = reservations.slice(batchCount * 1000000, (batchCount + 1) * 1000000);
+    reservationWriter.writeRecords(reservationBatch)
+      .catch((err) => {
+        console.log('Error writing batch:', batchCount);
+      });
+    batchCount++;
+  }
+
+  console.log('Done at:', new Date());
+};
+
+const seedCassandraReservations = () => {
+  console.log('Started at:', new Date());
+
+  let reservationCount = 1;
+  let reservations = [];
+  while (reservationCount <= 20000000) {
+    const userID = Math.max(random(1000000), 1);
+    const propertyID = Math.max(random(10000000), 1);
+    reservations.push(cassandraReservationGenerator(reservationCount, propertyID, userID));
+    reservationCount++;
+  }
+  console.log('Finished creating array at:', new Date());
+  let batchCount = 0;
+  const totalBatches = reservationCount / 1000000;
+
+  while (batchCount < totalBatches) {
+    let reservationBatch = reservations.slice(batchCount * 1000000, (batchCount + 1) * 1000000);
+    cassandraReservationWriter.writeRecords(reservationBatch)
+      .catch((err) => {
+        console.log('Error writing batch:', batchCount);
+      });
+    batchCount++;
+  }
+
+  console.log('Done at:', new Date());
+};
+
+// // Postgres csv generators
+// seedUsers();
+// seedProperties();
+// seedReservations();
+
+// Cassandra csv generators
+// seedCassandraUsers();
+// seedCassandraProperties();
+// seedCassandraReservations();
+
+// // seeding scripts
+// node --max-old-space-size=8192 db/seed.js 

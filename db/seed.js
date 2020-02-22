@@ -7,7 +7,10 @@ const random = (val) => {
 };
 
 const dateBlockGenerator = () => {
-  const start = new Date();
+  let start = new Date();
+  const ms = Date.parse(start);
+  const excess = ms % 86400000;
+  start = new Date(ms - excess);
   start.setUTCDate(start.getUTCDate() + random(16));
   const end = new Date(start);
   end.setUTCDate(end.getUTCDate() + random(14));
@@ -47,6 +50,7 @@ const propertyArrayGenerator = (userID) => {
 
 const cassandraPropertyGenerator = (propertyID, userID) => {
   return [
+    reservationID,
     propertyID,
     userID,
     faker.address.streetAddress(), 
@@ -338,7 +342,7 @@ const seedCassandraReservations = () => {
   console.log('Done at:', new Date());
 };
 
-// // Postgres csv generators
+// Postgres csv generators
 // seedUsers();
 // seedProperties();
 // seedReservations();
@@ -348,5 +352,5 @@ const seedCassandraReservations = () => {
 // seedCassandraProperties();
 // seedCassandraReservations();
 
-// // seeding scripts
+// seeding scripts
 // node --max-old-space-size=8192 db/seed.js 

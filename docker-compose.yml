@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  survey:
+    image: 'kevinyaohuiong/checkout:component'
+    depends_on:
+      - 'database'
+    ports:
+      - '3001:3001'
+
+  database:
+    image: postgres:latest

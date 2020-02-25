@@ -9,7 +9,7 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name: ['Calendar Checkout - Air Busy Beavers'],
+  app_name: ['Calendar Checkout (Deployed) - Air Busy Beavers'],
   /**
    * Your New Relic license key.
    */

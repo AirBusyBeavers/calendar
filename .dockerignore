@@ -1,3 +1,7 @@
 node_modules/
 *.log
-newrelic.js
+db/*.csv
+db/*.sql
+Planning
+server/db/
+server/test.js

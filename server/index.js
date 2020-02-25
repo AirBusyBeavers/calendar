@@ -3,7 +3,7 @@ process.env.NODE_ENV = 'production';
 const express = require('express');
 const axios = require('axios');
 const path = require('path');
-const morgan = require('morgan');
+// const morgan = require('morgan');
 const parser = require('body-parser');
 // const legacydb = require('./db');
 const db = require('../db/postgres.js');
@@ -58,7 +58,7 @@ app.get('/month', (req, res) => {
 // New CRUD operations for SDC
 // API for RESERVATIONS table (PRIMARY TABLE)
 app.post('/reservations', (req, res) => {
-  // const { reservationID, userID, propertyID, reservationstart, reservationend, adults, children, infants } = req.body;
+  // const { userID, propertyID, reservationstart, reservationend, adults, children, infants } = req.body;
   db.makeReservation(req.body, (err, ok) => {
     if (err) {
       if (typeof err === 'object') {
@@ -74,31 +74,11 @@ app.post('/reservations', (req, res) => {
   });
 });
 
-// prioritizes retrieving reservations with following priority: reservationID > propertyID > userID
-app.get('/reservations', (req, res) => {
-  const { reservationID, propertyID, userID } = req.body;
-  if (reservationID) {
-    db.getReservationById(parseInt(reservationID), (err, reservationData) => {
-      if (err) {
-        res.status(500);
-        res.send(err);
-      } else {
-        res.status(200);
-        res.send(reservationData);
-      }
-    });
-  } else if (propertyID) {
+// GETS RESERVATIONS FOR A GIVEN PROPERTY ID
+app.get('/reservations/:propertyID', (req, res) => {
+  const { propertyID } = req.params;
+  if (propertyID) {
     db.getReservationsByProperty(parseInt(propertyID), (err, reservationData) => {
-      if (err) {
-        res.status(500);
-        res.send(err);
-      } else {
-        res.status(200);
-        res.send(reservationData);
-      }
-    });
-  } else if (userID) {
-    db.getReservationsByUser(parseInt(userID), (err, reservationData) => {
       if (err) {
         res.status(500);
         res.send(err);
@@ -109,7 +89,7 @@ app.get('/reservations', (req, res) => {
     });
   } else {
     res.status(400);
-    res.send('Invalid query input, please provide a valid userID or propertyID');
+    res.send('Invalid query input, please provide a valid propertyID');
   }
 });
 

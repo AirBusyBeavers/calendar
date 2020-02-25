@@ -1,19 +1,20 @@
-const axios = require('axios');
+// const axios = require('axios');
 const { Pool, Client } = require('pg');
 
 const pool = new Pool({
-  user: 'kevin_ong',
-  host: 'localhost',
+  user: 'ubuntu',
+  host: '52.53.198.1',
   database: 'checkout',
   port: 5432,
 });
 
 // HELPER FUNCTION TO CHECK FOR VALID RESERVATIONS
 const isValidReservation = (start, end, reservationsArray) => {
+  console.log(Date.parse(start), Date.parse(end));
   for (let i = 0; i < reservationsArray[0].length; i++) {
-    if (start >= reservationsArray[0][i] || start <= reservationsArray[1][i]) {
+    if (Date.parse(start) >= reservationsArray[0][i] || Date.parse(start) <= reservationsArray[1][i]) {
       return false;
-    } else if (end >= Array[0][i] || end <= Array[1][i]) {
+    } else if (Date.parse(end) >= reservationsArray[0][i] || Date.parse(end) <= reservationsArray[1][i]) {
       return false;
     }
   }
@@ -26,6 +27,7 @@ const getUserById = (userID, cb) => {
     if (err) {
       throw new Error(err);
     }
+    console.log(client);
     client.query(`SELECT * FROM users WHERE userID = $1 ;`, [userID])
       .then((res) => {
         cb(null, res.rows[0]);
@@ -61,7 +63,8 @@ const getPropertyById = (propertyID, cb) => {
 const getReservationById = (reservationID, cb) => {
   pool.connect((err, client, release) => {
     if (err) {
-      throw new Error(err);
+      console.log(err);
+      // throw new Error(err);
     }
 
     const query = `SELECT * FROM reservations WHERE reservationID = $1 ;`;
@@ -111,7 +114,11 @@ const getReservationsByProperty = (propertyID, cb) => {
 
     client.query(query, params)
       .then((res) => {
-        cb(null, res.rows);
+        if (res.rows.length !== 0) {
+          cb(null, res.rows);
+        } else {
+          cb(null, 'No reservations found for this propertyID');
+        }
         release();
       })
       .catch((err) => {
@@ -124,7 +131,6 @@ const getReservationsByProperty = (propertyID, cb) => {
 // POSTS
 const makeReservation = (reservationDetails, cb) => {
   const {
-    reservationID, 
     userID,
     propertyID,
     reservationStart,
@@ -136,8 +142,8 @@ const makeReservation = (reservationDetails, cb) => {
 
   const selectQuery = `SELECT reservationStart, reservationEnd FROM reservations where propertyID = $1`;
   const selectParams = [propertyID];
-  const insertQuery = `INSERT INTO reservations(reservationID, userID, propertyID, reservationStart, reservationEnd, adults, children, infants) values($1, $2, $3, $4, $5, $6, $7, $8) ;`;
-  const insertParams = [reservationID, userID, propertyID, reservationStart, reservationEnd, adults, children, infants];
+  const insertQuery = `INSERT INTO reservations(userID, propertyID, reservationStart, reservationEnd, adults, children, infants) values($1, $2, $3, $4, $5, $6, $7) ;`;
+  const insertParams = [userID, propertyID, reservationStart, reservationEnd, adults, children, infants];
 
   pool.connect((connectErr, client, release) => {
     if (connectErr) {
@@ -156,29 +162,25 @@ const makeReservation = (reservationDetails, cb) => {
       })
       .then((datesArray) => {
         console.log('CHECKING DESIRED RESERVATION AGAINST EXISTING RESERVATION INFORMATION');
-        const valid = isValidReservation(start, end, datesArray);
-        if (!valid) {
-          cb('Reservation collision detected, tell user to refresh the page and select a new reservation slot.');
-          return;
-        }
+        console.log(datesArray);
+        return isValidReservation(reservationStart, reservationEnd, datesArray);
       })
-      .then(() => {
-        console.log('VALID RESERVATION PASSED, STARTING INSERTION OPERATION');
-        pool.connect((connectErr2, client2, release2) => {
-          if (connectErr2) {
-            throw new Error(connectErr2);
-          }
-          client2.query(insertQuery, insertParams)
-            .then((res) => {
-              release2();
-              cb(null, 'Reservation insertion successful!');
-            })
-            .catch((insertErr) => {
-              release2();
-              cb(insertErr.detail);
-            });
-        });
-        release();
+      .then((valid) => {
+        if (valid) {
+          console.log('VALID RESERVATION PASSED, STARTING INSERTION OPERATION');
+          client.query(insertQuery, insertParams)
+          .then((res) => {
+            release();
+            console.log(res);
+            cb(null, 'Reservation insertion successful!');
+          })
+          .catch((insertErr) => {
+            release();
+            cb(insertErr.detail);
+          });
+        } else {
+          cb('Reservation collision detected, tell user to refresh the page and select a new reservation slot.');
+        }
       })
       .catch((searchErr) => {
         cb(searchErr.detail);
